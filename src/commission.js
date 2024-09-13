@@ -1,6 +1,6 @@
 export class Commission {
    rule
-   orgId
+   user
    tax
 
    /**
@@ -9,7 +9,7 @@ export class Commission {
     */
    constructor(input) {
       this.rule = input.rule
-      this.orgId = input.user.orgId
+      this.user = input.user
       this.tax = input.tax
    }
 
@@ -17,7 +17,7 @@ export class Commission {
     * Get category fee and return parsing to number if it is string
     */
    getCategoryFee(category) {
-      const fee = this.rule.categories.find(val => val.slug === `${this.orgId}#${this.slugifyString(category)}`).fee
+      const fee = this.rule.categories.find(val => val.slug === `${this.user.org_id}#${this.slugifyString(category)}`).fee
 
       return Number(fee)
    }
@@ -61,6 +61,8 @@ export class Commission {
    * @param {string} input.org_commission
    * @param {string} input.col_code
    * @param {string} input.org_net_commission
+   * 
+   * Main entry to calculate commissions
    */
    calculate(input) {
       let amount = Number(input.org_net_commission)
@@ -70,8 +72,22 @@ export class Commission {
       if (!fee) {
          return {
             success: false,
+            category: input.category,
+            org_id: this.user.orgId,
+            client: input.client,
+            closure: input.closure_id,
+            commission_id: input._id,
             message: `Regra não possui percentual para categoria: ${input.category}`,
-            data: null
+            gross_income: amount,
+            fee: 0,
+            net: 0,
+            org_gross_income: 0,
+            org_fee: 0,
+            org_net: 0,
+            org_received_amount: input.org_net_commission,
+            product: input.product,
+            tax: this.tax,
+            source: 'XP Investimentos', // TODO: Pending
          }
       }
 
@@ -84,9 +100,12 @@ export class Commission {
       const orgCommission = this.getOrgShare({ fee: 100 - fee, amount })
 
       return {
+         success: true,
          category: input.category,
          client: input.client,
          closure: new Date(),
+         user_id: this.user.id,
+         org_id: this.user.org_id,
          commission_id: input._id,
          gross_income: Number(grossIncome),
          fee,
