@@ -1,0 +1,13 @@
+{
+  "name": "calculate-commissions",
+  "version": "1.0.0",
+  "description": "Function to calculate user commissions",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "mongodb": "^6.9.0"
+  }
+}

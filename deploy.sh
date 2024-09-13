@@ -1,0 +1,1 @@
+aws lambda update-function-code --function-name commissions-calculate --zip-file fileb://lambda.zip
