@@ -29,6 +29,13 @@ export const handler = async (event) => {
             processed: false
         }).toArray()
 
+        if (commissions.length < 1) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: 'No commissions available' })
+            }
+        }
+
         for await (const data of commissions) {
             const commission = calcCommission.calculate(data)
 
