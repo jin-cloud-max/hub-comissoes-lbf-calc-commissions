@@ -10,68 +10,76 @@ export const handler = async (event) => {
 
    const body = JSON.parse(record.body);
 
-   const user = body.user
-   const rule = body.rule
-   const tax = body.tax
+   const user = body.data.user
+   const rules = body.data.user.rules
+   const tax = body.data.tax
+   const orgId = body.orgId
+   const closureId = body.data.closureId
 
-   const calcCommission = new Commission({
-      rule,
-      user,
-      tax: Number(tax)
-   })
-
-   const collection = client.db('commissions').collection('commission')
-   const userCommission = client.db('commissions').collection('user_commission')
+   const collection = client.db(process.env.MONGO_DATABASE).collection('commission')
+   const userCommission = client.db(process.env.MONGO_DATABASE).collection('user_commission')
+   const ruleCollection = client.db(process.env.MONGO_DATABASE).collection('rule')
 
    try {
-      // TODO: Add closure id
-      const mongoFilter = {
-         col_code: user.code,
-         found_category: true,
-         processed: false
-      }
+      for await (const item of rules) {
+         const rule = await ruleCollection.findOne({ rule_id: item.id })
 
-      const commissions = await collection.find(mongoFilter).toArray()
-
-      if (commissions.length < 1) {
-         return {
-            statusCode: 200,
-            body: JSON.stringify({ message: 'No commissions available' })
+         if (!rule) {
+            throw new Error('Rule not found on ')
          }
-      }
 
-      let batch = []
+         const calcCommission = new Commission({
+            rule,
+            user,
+            tax: Number(tax),
+            orgId
+         })
 
-      for await (const data of commissions) {
-         const commission = calcCommission.calculate(data)
+         const mongoFilter = {
+            col_code: user.code,
+            found_category: true,
+            closure_id: closureId,
+            processed: false
+         }
 
-         batch.push(commission)
+         const commissions = await collection.find(mongoFilter).toArray()
 
-         if (batch >= BATCH_SIZE) {
+         if (commissions.length < 1) {
+            console.log('No commissions pending')
+
+            break
+         }
+
+         let batch = []
+
+         for await (const data of commissions) {
+            const commission = calcCommission.calculate(data)
+
+            batch.push(commission)
+
+            if (batch >= BATCH_SIZE) {
+               await userCommission.insertMany(batch)
+
+               batch = []
+            }
+
+         }
+
+         if (batch.length > 0) {
             await userCommission.insertMany(batch)
 
             batch = []
          }
 
+         await collection.updateMany(mongoFilter, {
+            $set: {
+               processed: true
+            }
+         })
       }
 
-      if (batch.length > 0) {
-         await userCommission.insertMany(batch)
 
-         batch = []
-      }
-
-      await collection.updateMany(mongoFilter, {
-         $set: {
-            processed: true
-         }
-      })
-
-      const response = {
-         statusCode: 200,
-         body: JSON.stringify('Hello from Lambda!'),
-      };
-      return response;
+      console.log(`Comissão calculada para o usuário: ${JSON.stringify(user)}`)
    } catch (error) {
       console.log(error)
 

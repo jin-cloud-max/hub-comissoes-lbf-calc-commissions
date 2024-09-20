@@ -2,6 +2,7 @@ export class Commission {
    rule
    user
    tax
+   orgId
 
    /**
     * Receives the user rule
@@ -10,6 +11,7 @@ export class Commission {
    constructor(input) {
       this.rule = input.rule
       this.user = input.user
+      this.orgId = input.orgId
       this.tax = input.tax
    }
 
@@ -17,9 +19,24 @@ export class Commission {
     * Get category fee and return parsing to number if it is string
     */
    getCategoryFee(category) {
-      const fee = this.rule.categories.find(val => val.slug === `${this.user.org_id}#${this.slugifyString(category)}`).fee
 
-      return Number(fee)
+      const parseCategory = `${this.orgId}#${this.slugifyString(category)}`
+
+      const getCategory = this.rule.categories.find(val => val.slug === parseCategory)
+
+      if (!getCategory) {
+         return {
+            success: false,
+            type: "category_not_found",
+            fee: null
+         }
+      }
+
+      return {
+         success: true,
+         type: 'category_found',
+         fee: Number(getCategory.fee)
+      }
    }
 
    /**
@@ -42,7 +59,6 @@ export class Commission {
          tax
       }
    }
-
 
    /** 
    * @param {Object} input
@@ -67,15 +83,15 @@ export class Commission {
    calculate(input) {
       let amount = Number(input.org_net_commission)
 
-      const fee = this.getCategoryFee(input.category)
+      const result = this.getCategoryFee(input.category)
 
-      if (!fee) {
+      if (!result.success) {
          return {
             success: false,
             category: input.category,
             org_id: this.user.orgId,
             client: input.client,
-            closure: input.closure_id,
+            closure_id: input.closure_id,
             commission_id: input._id,
             message: `Regra não possui percentual para categoria: ${input.category}`,
             gross_income: amount,
@@ -87,9 +103,11 @@ export class Commission {
             org_received_amount: input.org_net_commission,
             product: input.product,
             tax: this.tax,
-            source: 'XP Investimentos', // TODO: Pending
+            source: input.source, // TODO: Pending
          }
       }
+
+      const { fee } = result
 
       const grossIncome = (fee / 100) * amount
 
@@ -103,7 +121,7 @@ export class Commission {
          success: true,
          category: input.category,
          client: input.client,
-         closure: new Date(),
+         closure_id: input.closure_id,
          user_id: this.user.id,
          org_id: this.user.org_id,
          commission_id: input._id,
@@ -116,7 +134,7 @@ export class Commission {
          org_received_amount: input.org_net_commission,
          product: input.product,
          tax: this.tax,
-         source: 'XP Investimentos',
+         source: input.source,
       }
    }
 
