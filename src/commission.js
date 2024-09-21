@@ -89,11 +89,14 @@ export class Commission {
          return {
             success: false,
             category: input.category,
-            org_id: this.user.orgId,
+            org_id: this.orgId,
             client: input.client,
             closure_id: input.closure_id,
             commission_id: input._id,
-            message: `Regra não possui percentual para categoria: ${input.category}`,
+            error: {
+               type: 'category_not_found',
+               message: `Regra não possui percentual para categoria: ${input.category}`,
+            },
             gross_income: amount,
             fee: 0,
             net: 0,
@@ -103,7 +106,8 @@ export class Commission {
             org_received_amount: input.org_net_commission,
             product: input.product,
             tax: this.tax,
-            source: input.source, // TODO: Pending
+            source: input.source,
+            created_at: new Date()
          }
       }
 
@@ -123,7 +127,7 @@ export class Commission {
          client: input.client,
          closure_id: input.closure_id,
          user_id: this.user.id,
-         org_id: this.user.org_id,
+         org_id: this.orgId,
          commission_id: input._id,
          gross_income: Number(grossIncome),
          fee,
@@ -135,6 +139,7 @@ export class Commission {
          product: input.product,
          tax: this.tax,
          source: input.source,
+         created_at: new Date()
       }
    }
 
