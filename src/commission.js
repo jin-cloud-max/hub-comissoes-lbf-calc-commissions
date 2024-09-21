@@ -92,6 +92,11 @@ export class Commission {
             org_id: this.orgId,
             client: input.client,
             closure_id: input.closure_id,
+            user: {
+               id: this.user.id,
+               name: this.user.name,
+               code: this.user.code
+            },
             commission_id: input._id,
             error: {
                type: 'category_not_found',
@@ -126,7 +131,11 @@ export class Commission {
          category: input.category,
          client: input.client,
          closure_id: input.closure_id,
-         user_id: this.user.id,
+         user: {
+            id: this.user.id,
+            name: this.user.name,
+            code: this.user.code
+         },
          org_id: this.orgId,
          commission_id: input._id,
          gross_income: Number(grossIncome),
