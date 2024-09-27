@@ -91,7 +91,7 @@ export class Commission {
             category: input.category,
             org_id: this.orgId,
             client: input.client,
-            closure_id: input.closure_id,
+            closure: input.closure,
             user: {
                id: this.user.id,
                name: this.user.name,
@@ -130,7 +130,7 @@ export class Commission {
          success: true,
          category: input.category,
          client: input.client,
-         closure_id: input.closure_id,
+         closure: input.closure,
          user: {
             id: this.user.id,
             name: this.user.name,

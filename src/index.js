@@ -38,7 +38,7 @@ export const handler = async (event) => {
          const mongoFilter = {
             col_code: user.code,
             found_category: true,
-            closure_id: closureId,
+            'closure.id': closureId,
             processed: false
          }
 
