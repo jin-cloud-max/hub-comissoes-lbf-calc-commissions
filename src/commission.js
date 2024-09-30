@@ -20,9 +20,7 @@ export class Commission {
     */
    getCategoryFee(category) {
 
-      const parseCategory = `${this.orgId}#${this.slugifyString(category)}`
-
-      const getCategory = this.rule.categories.find(val => val.slug === parseCategory)
+      const getCategory = this.rule.categories.find(val => val.id === category.id)
 
       if (!getCategory) {
          return {
@@ -91,7 +89,10 @@ export class Commission {
             category: input.category,
             org_id: this.orgId,
             client: input.client,
-            closure: input.closure,
+            closure: {
+               id: input.closure.id,
+               date: new Date(input.closure.date)
+            },
             user: {
                id: this.user.id,
                name: this.user.name,
@@ -130,7 +131,10 @@ export class Commission {
          success: true,
          category: input.category,
          client: input.client,
-         closure: input.closure,
+         closure: {
+            id: input.closure.id,
+            date: new Date(input.closure.date)
+         },
          user: {
             id: this.user.id,
             name: this.user.name,

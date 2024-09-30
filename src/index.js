@@ -14,7 +14,7 @@ export const handler = async (event) => {
    const rules = body.data.user.rules
    const tax = body.data.tax
    const orgId = body.orgId
-   const closureId = body.data.closureId
+   const closureId = body.data.closure
 
    const collection = client.db(process.env.MONGO_DATABASE).collection('commission')
    const userCommission = client.db(process.env.MONGO_DATABASE).collection('user_commission')
@@ -37,7 +37,7 @@ export const handler = async (event) => {
 
          const mongoFilter = {
             col_code: user.code,
-            found_category: true,
+            success: true,
             'closure.id': closureId,
             processed: false
          }
